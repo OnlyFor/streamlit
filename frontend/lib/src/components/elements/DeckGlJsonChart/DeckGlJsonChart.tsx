@@ -26,6 +26,7 @@ import {
 } from "@streamlit/lib/src/theme"
 // We don't have Typescript defs for these imports, which makes ESLint unhappy
 /* eslint-disable import/no-extraneous-dependencies */
+import { CartoLayer } from "@deck.gl/carto"
 import * as layers from "@deck.gl/layers"
 import { JSONConverter } from "@deck.gl/json"
 import * as geoLayers from "@deck.gl/geo-layers"
@@ -64,7 +65,13 @@ interface DeckObject {
 }
 
 const configuration = {
-  classes: { ...layers, ...aggregationLayers, ...geoLayers, ...meshLayers },
+  classes: {
+    ...layers,
+    ...aggregationLayers,
+    ...geoLayers,
+    ...meshLayers,
+    CartoLayer,
+  },
 }
 
 registerLoaders([CSVLoader, GLTFLoader])
