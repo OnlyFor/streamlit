@@ -270,17 +270,6 @@ describe("AppNavigation", () => {
     expect(onPageNotFound).toHaveBeenCalledWith("foo")
   })
 
-  it("sends metrics when initialized", () => {
-    // Initialize navigation from the new session proto
-    appNavigation.handleNewSession(generateNewSession())
-    appNavigation.sendMPAMetricsOnInitialization()
-
-    expect(metricsMgr.enqueue).toHaveBeenCalledWith("updateReport", {
-      numPages: 1,
-      isMainPage: true,
-    })
-  })
-
   it("finds url by path when path is valid", () => {
     // Initialize navigation from the new session proto
     appNavigation.handleNewSession(generateNewSession())

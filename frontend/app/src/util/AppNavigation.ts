@@ -39,32 +39,17 @@ export type PageUrlUpdateCallback = (
 ) => void
 export type PageNotFoundCallback = (pageName?: string) => void
 
-export class AppNavigation {
-  readonly hostCommunicationMgr: HostCommunicationManager
+export class V1Strategy {
+  appPages: IAppPage[]
 
-  readonly metricsMgr: SegmentMetricsManager
+  currentPageScriptHash: string | null
 
-  readonly onUpdatePageUrl: PageUrlUpdateCallback
+  hideSidebarNav: boolean | null
 
-  readonly onPageNotFound: PageNotFoundCallback
+  parent: AppNavigation
 
-  private appPages: IAppPage[]
-
-  private currentPageScriptHash: string | null
-
-  private hideSidebarNav: boolean | null
-
-  constructor(
-    hostCommunicationMgr: HostCommunicationManager,
-    metricsMgr: SegmentMetricsManager,
-    onUpdatePageUrl: PageUrlUpdateCallback,
-    onPageNotFound: PageNotFoundCallback
-  ) {
-    this.hostCommunicationMgr = hostCommunicationMgr
-    this.metricsMgr = metricsMgr
-    this.onUpdatePageUrl = onUpdatePageUrl
-    this.onPageNotFound = onPageNotFound
-
+  constructor(parent: AppNavigation) {
+    this.parent = parent
     this.appPages = []
     this.currentPageScriptHash = null
     this.hideSidebarNav = null
@@ -90,7 +75,7 @@ export class AppNavigation {
 
     const isViewingMainPage =
       mainPage.pageScriptHash === this.currentPageScriptHash
-    this.onUpdatePageUrl(mainPageName, newPageName, isViewingMainPage)
+    this.parent.onUpdatePageUrl(mainPageName, newPageName, isViewingMainPage)
 
     // Set the title to its default value
     document.title = `${newPageName ?? ""} · Streamlit`
@@ -102,12 +87,12 @@ export class AppNavigation {
         currentPageScriptHash: this.currentPageScriptHash,
       },
       () => {
-        this.hostCommunicationMgr.sendMessageToHost({
+        this.parent.hostCommunicationMgr.sendMessageToHost({
           type: "SET_APP_PAGES",
           appPages: this.appPages,
         })
 
-        this.hostCommunicationMgr.sendMessageToHost({
+        this.parent.hostCommunicationMgr.sendMessageToHost({
           type: "SET_CURRENT_PAGE_NAME",
           currentPageName: isViewingMainPage ? "" : newPageName,
           currentPageScriptHash: this.currentPageScriptHash as string,
@@ -121,7 +106,7 @@ export class AppNavigation {
     return [
       { appPages },
       () => {
-        this.hostCommunicationMgr.sendMessageToHost({
+        this.parent.hostCommunicationMgr.sendMessageToHost({
           type: "SET_APP_PAGES",
           appPages,
         })
@@ -131,32 +116,20 @@ export class AppNavigation {
 
   handlePageNotFound(pageNotFound: PageNotFound): MaybeStateUpdate {
     const { pageName } = pageNotFound
-    this.onPageNotFound(pageName)
+    this.parent.onPageNotFound(pageName)
     const currentPageScriptHash = this.appPages[0]?.pageScriptHash ?? ""
     this.currentPageScriptHash = currentPageScriptHash
 
     return [
       { currentPageScriptHash },
       () => {
-        this.hostCommunicationMgr.sendMessageToHost({
+        this.parent.hostCommunicationMgr.sendMessageToHost({
           type: "SET_CURRENT_PAGE_NAME",
           currentPageName: "",
           currentPageScriptHash,
         })
       },
     ]
-  }
-
-  sendMPAMetricsOnInitialization(): void {
-    const { appPages, currentPageScriptHash } = this
-    if (appPages.length === 0) {
-      return
-    }
-
-    this.metricsMgr.enqueue("updateReport", {
-      numPages: appPages.length,
-      isMainPage: appPages[0].pageScriptHash === currentPageScriptHash,
-    })
   }
 
   findPageByUrlPath(pathname: string): IAppPage {
@@ -167,5 +140,47 @@ export class AppNavigation {
         pathname.endsWith("/" + appPage.pageName)
       ) ?? this.appPages[0]
     )
+  }
+}
+
+export class AppNavigation {
+  readonly hostCommunicationMgr: HostCommunicationManager
+
+  readonly metricsMgr: SegmentMetricsManager
+
+  readonly onUpdatePageUrl: PageUrlUpdateCallback
+
+  readonly onPageNotFound: PageNotFoundCallback
+
+  readonly strategy: V1Strategy
+
+  constructor(
+    hostCommunicationMgr: HostCommunicationManager,
+    metricsMgr: SegmentMetricsManager,
+    onUpdatePageUrl: PageUrlUpdateCallback,
+    onPageNotFound: PageNotFoundCallback
+  ) {
+    this.hostCommunicationMgr = hostCommunicationMgr
+    this.metricsMgr = metricsMgr
+    this.onUpdatePageUrl = onUpdatePageUrl
+    this.onPageNotFound = onPageNotFound
+
+    this.strategy = new V1Strategy(this)
+  }
+
+  handleNewSession(newSession: NewSession): MaybeStateUpdate {
+    return this.strategy.handleNewSession(newSession)
+  }
+
+  handlePagesChanged(pagesChangedMsg: PagesChanged): MaybeStateUpdate {
+    return this.strategy.handlePagesChanged(pagesChangedMsg)
+  }
+
+  handlePageNotFound(pageNotFound: PageNotFound): MaybeStateUpdate {
+    return this.strategy.handlePageNotFound(pageNotFound)
+  }
+
+  findPageByUrlPath(pathname: string): IAppPage {
+    return this.strategy.findPageByUrlPath(pathname)
   }
 }

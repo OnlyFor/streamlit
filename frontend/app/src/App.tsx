@@ -958,7 +958,7 @@ export class App extends PureComponent<Props, State> {
     this.metricsMgr.setMetadata(this.state.deployedAppMetadata)
     this.metricsMgr.setAppHash(newSessionHash)
 
-    this.appNavigation.sendMPAMetricsOnInitialization()
+    this.metricsMgr.enqueue("updateReport")
 
     if (
       appHash === newSessionHash &&
