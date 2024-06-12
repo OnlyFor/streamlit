@@ -68,8 +68,8 @@ describe("SidebarNav", () => {
   it("replaces underscores with spaces in pageName", () => {
     render(<SidebarNav {...getProps()} />)
 
-    expect(screen.getByText("streamlit app")).toBeInTheDocument()
-    expect(screen.getByText("my other page")).toBeInTheDocument()
+    expect(screen.getByText("streamlit_app")).toBeInTheDocument()
+    expect(screen.getByText("my_other_page")).toBeInTheDocument()
   })
 
   describe("page links", () => {
@@ -266,6 +266,6 @@ describe("SidebarNav", () => {
     const props = getProps({ currentPageScriptHash: "other_page_hash" })
     render(<SidebarNav {...props} />)
 
-    expect(screen.getByText("my other page")).toHaveStyle("color: #262730")
+    expect(screen.getByText("my_other_page")).toHaveStyle("color: #262730")
   })
 })

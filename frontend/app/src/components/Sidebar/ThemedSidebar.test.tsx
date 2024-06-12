@@ -63,7 +63,7 @@ describe("ThemedSidebar Component", () => {
     expect(screen.getByTestId("stSidebarNav")).toBeInTheDocument()
 
     // Check the app pages passed
-    expect(screen.getByText("streamlit app")).toBeInTheDocument()
-    expect(screen.getByText("other app page")).toBeInTheDocument()
+    expect(screen.getByText("streamlit_app")).toBeInTheDocument()
+    expect(screen.getByText("other_app_page")).toBeInTheDocument()
   })
 })

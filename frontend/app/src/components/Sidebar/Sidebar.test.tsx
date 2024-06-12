@@ -211,8 +211,8 @@ describe("Sidebar Component", () => {
 
     const sidebarAppPages = screen.getAllByRole("listitem")
     expect(sidebarAppPages).toHaveLength(2)
-    expect(sidebarAppPages[0]).toHaveTextContent("first page")
-    expect(sidebarAppPages[1]).toHaveTextContent("second page")
+    expect(sidebarAppPages[0]).toHaveTextContent("first_page")
+    expect(sidebarAppPages[1]).toHaveTextContent("second_page")
   })
 
   it("can hide SidebarNav with the hideSidebarNav option", () => {
