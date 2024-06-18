@@ -169,6 +169,7 @@ def _fragment(
             ctx = get_script_run_ctx(suppress_warning=True)
             assert ctx is not None
 
+            # TODO(vdonato): Add unit and e2e tests for these changes
             if ctx.fragment_ids_this_run:
                 # This script run is a run of one or more fragments. We restore the
                 # state of ctx.cursors and dg_stack to the snapshots we took when this
@@ -176,12 +177,15 @@ def _fragment(
                 ctx.cursors = deepcopy(cursors_snapshot)
                 dg_stack.set(deepcopy(dg_stack_snapshot))
             else:
-                # Otherwise, we must be in a full script run. We need to temporarily set
-                # ctx.current_fragment_id so that elements corresponding to this
-                # fragment get tagged with the appropriate ID. ctx.current_fragment_id
-                # gets reset after the fragment function finishes running.
-                ctx.current_fragment_id = fragment_id
+                # Otherwise, we must be in a full script run. We keep track of all
+                # fragments defined in this script run to ensure that we don't
+                # delete them when we clean up this session's fragment storage.
                 ctx.new_fragment_ids.add(fragment_id)
+
+            # Set ctx.current_fragment_id so that elements corresponding to this
+            # fragment get tagged with the appropriate ID. ctx.current_fragment_id gets
+            # reset after the fragment function finishes running.
+            ctx.current_fragment_id = fragment_id
 
             try:
                 # Make sure we set the active script hash to the same value
