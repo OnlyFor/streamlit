@@ -59,7 +59,6 @@ _os.environ["MPLBACKEND"] = "Agg"
 # Must be at the top, to avoid circular dependency.
 from streamlit import logger as _logger
 from streamlit import config as _config
-from streamlit.deprecation_util import deprecate_func_name as _deprecate_func_name
 from streamlit.version import STREAMLIT_VERSION_STRING as _STREAMLIT_VERSION_STRING
 
 # Give the package a version.
@@ -77,8 +76,6 @@ from streamlit.runtime.caching import (
     cache_resource as _cache_resource,
     cache_data as _cache_data,
     cache as _cache,
-    experimental_singleton as _experimental_singleton,
-    experimental_memo as _experimental_memo,
 )
 from streamlit.runtime.connection_factory import (
     connection_factory as _connection,
@@ -91,10 +88,6 @@ from streamlit.runtime.state import (
     QueryParamsProxy as _QueryParamsProxy,
 )
 from streamlit.user_info import UserInfoProxy as _UserInfoProxy
-from streamlit.commands.experimental_query_params import (
-    get_query_params as _get_query_params,
-    set_query_params as _set_query_params,
-)
 
 import streamlit.column_config as _column_config
 
@@ -113,7 +106,6 @@ from streamlit.commands.page_config import set_page_config as set_page_config
 from streamlit.commands.execution_control import (
     stop as stop,
     rerun as rerun,
-    experimental_rerun as _experimental_rerun,
     switch_page as switch_page,
 )
 
@@ -239,32 +231,8 @@ connection = _connection
 # Experimental APIs
 experimental_dialog = _dialog_decorator
 experimental_fragment = _fragment
-experimental_memo = _experimental_memo
-experimental_singleton = _experimental_singleton
 experimental_user = _UserInfoProxy()
 
-
-_EXPERIMENTAL_QUERY_PARAMS_DEPRECATE_MSG = "Refer to our [docs page](https://docs.streamlit.io/develop/api-reference/caching-and-state/st.query_params) for more information."
-
-experimental_get_query_params = _deprecate_func_name(
-    _get_query_params,
-    "experimental_get_query_params",
-    "2024-04-11",
-    _EXPERIMENTAL_QUERY_PARAMS_DEPRECATE_MSG,
-    name_override="query_params",
-)
-experimental_set_query_params = _deprecate_func_name(
-    _set_query_params,
-    "experimental_set_query_params",
-    "2024-04-11",
-    _EXPERIMENTAL_QUERY_PARAMS_DEPRECATE_MSG,
-    name_override="query_params",
-)
-experimental_rerun = _experimental_rerun
-experimental_data_editor = _main.experimental_data_editor
-experimental_connection = _deprecate_func_name(
-    connection, "experimental_connection", "2024-04-01", name_override="connection"
-)
 
 # make it possible to call streamlit.components.v1.html etc. by importing it here
 # import in the very end to avoid partially-initialized module import errors, because

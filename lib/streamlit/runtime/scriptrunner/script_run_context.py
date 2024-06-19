@@ -84,10 +84,6 @@ class ScriptRunContext:
     # the usage of widgets.
     disallow_cached_widget_usage: bool = False
 
-    # TODO(willhuang1997): Remove this variable when experimental query params are removed
-    _experimental_query_params_used = False
-    _production_query_params_used = False
-
     @property
     def page_script_hash(self):
         return self.pages_manager.get_current_page_script_hash()
@@ -156,22 +152,6 @@ class ScriptRunContext:
 
         # Pass the message up to our associated ScriptRunner.
         self._enqueue(msg)
-
-    def ensure_single_query_api_used(self):
-        if self._experimental_query_params_used and self._production_query_params_used:
-            raise StreamlitAPIException(
-                "Using `st.query_params` together with either `st.experimental_get_query_params` "
-                "or `st.experimental_set_query_params` is not supported. Please convert your app "
-                "to only use `st.query_params`"
-            )
-
-    def mark_experimental_query_params_used(self):
-        self._experimental_query_params_used = True
-        self.ensure_single_query_api_used()
-
-    def mark_production_query_params_used(self):
-        self._production_query_params_used = True
-        self.ensure_single_query_api_used()
 
 
 SCRIPT_RUN_CONTEXT_ATTR_NAME: Final = "streamlit_script_run_ctx"

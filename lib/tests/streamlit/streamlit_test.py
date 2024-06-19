@@ -174,13 +174,6 @@ class StreamlitTest(unittest.TestCase):
                 # Experimental APIs:
                 "experimental_dialog",
                 "experimental_user",
-                "experimental_singleton",
-                "experimental_memo",
-                "experimental_get_query_params",
-                "experimental_set_query_params",
-                "experimental_rerun",
-                "experimental_data_editor",
-                "experimental_connection",
                 "experimental_fragment",
                 "get_option",
                 "set_option",
