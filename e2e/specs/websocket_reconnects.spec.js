@@ -44,16 +44,41 @@ describe("websocket reconnects", () => {
         }, 100);
       });
 
-      // Wait until we've disconnected.
+      // Wait until we've disconnected and reconnected.
       cy.get("[data-testid='stStatusWidget']").should(
         "have.text",
-        "Connecting"
+        "Connecting",
       );
-      // Wait until we've reconnected and rerun the script.
       cy.get("[data-testid='stStatusWidget']").should("not.exist");
 
-      cy.get(".stMarkdown").contains(`count: ${expectedCount}`);
+      cy.getIndexed(".stMarkdown", 0).contains(`count: ${expectedCount}`);
+      cy.getIndexed(".stMarkdown", 1).contains(`slow operations attempted: 0`);
     }
+  });
+
+  it("reruns script when script is interrupted by a websocket disconnect", () => {
+    cy.get(".stCheckbox input").click({ force: true });
+
+    cy.window().then((win) => {
+      setTimeout(() => {
+        win.streamlitDebug.disconnectWebsocket();
+      }, 100);
+    });
+
+    // Wait until we've disconnected and reconnected.
+    cy.get("[data-testid='stStatusWidget']").should("have.text", "Connecting");
+    cy.get("[data-testid='stStatusWidget']").should(
+      "not.have.text",
+      "Connecting",
+    );
+
+    // Counter was incremented once when the checkbox was selected and a second
+    // time on the script rerun. We set a high timeout for this check because
+    // the operation we're simulating is naturally slow to give us time to
+    // disconnect the websocket while it's running.
+    cy.getIndexed(".stMarkdown", 1).contains(`slow operations attempted: 2`, {
+      timeout: 10000,
+    });
   });
 
   it("retains uploaded files when the websocket connection is dropped and reconnects", () => {
@@ -63,7 +88,7 @@ describe("websocket reconnects", () => {
     cy.fixture(fileName1).then((file1) => {
       cy.getIndexed(
         "[data-testid='stFileUploaderDropzone']",
-        uploaderIndex
+        uploaderIndex,
       ).attachFile(
         {
           fileContent: file1,
@@ -74,7 +99,7 @@ describe("websocket reconnects", () => {
           force: true,
           subjectType: "drag-n-drop",
           events: ["dragenter", "drop"],
-        }
+        },
       );
 
       cy.wait("@uploadFile");
@@ -85,7 +110,7 @@ describe("websocket reconnects", () => {
       cy.get(".stFileUploaderFileName").should("have.text", fileName1);
       cy.getIndexed("[data-testid='stText']", uploaderIndex).should(
         "contain.text",
-        file1
+        file1,
       );
 
       cy.window().then((win) => {
@@ -97,7 +122,7 @@ describe("websocket reconnects", () => {
       // Wait until we've disconnected.
       cy.get("[data-testid='stStatusWidget']").should(
         "have.text",
-        "Connecting"
+        "Connecting",
       );
       // Wait until we've reconnected and rerun the script.
       cy.get("[data-testid='stStatusWidget']").should("not.exist");
@@ -105,7 +130,7 @@ describe("websocket reconnects", () => {
       // Confirm that our uploaded file is still there.
       cy.getIndexed("[data-testid='stText']", uploaderIndex).should(
         "contain.text",
-        file1
+        file1,
       );
     });
   });
@@ -132,7 +157,7 @@ describe("websocket reconnects", () => {
 
       cy.get("[data-testid='stImage']", { timeout }).should(
         "have.length.at.least",
-        1
+        1,
       );
 
       cy.window().then((win) => {
@@ -144,13 +169,13 @@ describe("websocket reconnects", () => {
       // Wait until we've disconnected.
       cy.get("[data-testid='stStatusWidget']").should(
         "have.text",
-        "Connecting"
+        "Connecting",
       );
       // Wait until we've reconnected and rerun the script.
       cy.get("[data-testid='stStatusWidget']").should("not.exist");
 
       // Confirm that our picture is still there.
       cy.get("[data-testid='stImage']").should("have.length.at.least", 1);
-    }
+    },
   );
 });
