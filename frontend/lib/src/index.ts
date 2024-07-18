@@ -52,6 +52,7 @@ export { default as ThemeProvider } from "./components/core/ThemeProvider"
 export { LocalStore, localStorageAvailable } from "./util/storageUtils"
 export {
   createAutoTheme,
+  getHostSpecifiedTheme,
   createPresetThemes,
   CUSTOM_THEME_NAME,
   getCachedTheme,
@@ -70,7 +71,7 @@ export {
   hasLightBackgroundColor,
 } from "./theme"
 export { default as emotionLightTheme } from "./theme/emotionLightTheme"
-export type { ThemeConfig, EmotionTheme } from "./theme"
+export type { ThemeConfig, EmotionTheme, PresetThemeName } from "./theme"
 export { mockWindowLocation, render } from "./test_util"
 export { logError, logMessage, logWarning, logAlways } from "./util/log"
 export { getPossibleBaseUris, buildHttpUri, buildWsUri } from "./util/UriUtil"

@@ -378,10 +378,8 @@ const deleteOldCachedThemes = (): void => {
   // `stActiveTheme-${window.location.pathname}` with no version number.
   localStorage.removeItem(CACHED_THEME_BASE_KEY)
 
-  for (let i = 1; i < CACHED_THEME_VERSION; i++) {
-    localStorage.removeItem(
-      `${CACHED_THEME_BASE_KEY}-v${CACHED_THEME_VERSION}`
-    )
+  for (let i = 1; i <= CACHED_THEME_VERSION; i++) {
+    localStorage.removeItem(`${CACHED_THEME_BASE_KEY}-v${i}`)
   }
 }
 
@@ -391,6 +389,11 @@ export const setCachedTheme = (themeConfig: ThemeConfig): void => {
   }
 
   deleteOldCachedThemes()
+
+  // Do not set the theme if the app has a pre-defined theme from the embedder
+  if (isLightTheme() || isDarkTheme()) {
+    return
+  }
 
   const cachedTheme: CachedTheme = {
     name: themeConfig.name,
@@ -413,18 +416,7 @@ export const removeCachedTheme = (): void => {
   window.localStorage.removeItem(LocalStore.ACTIVE_THEME)
 }
 
-export const getDefaultTheme = (): ThemeConfig => {
-  // Priority for default theme
-  const cachedTheme = getCachedTheme()
-
-  // 1. Previous user preference
-  // We shouldn't ever have auto saved in our storage in case
-  // OS theme changes but we explicitly check in case!
-  if (cachedTheme && cachedTheme.name !== AUTO_THEME_NAME) {
-    return cachedTheme
-  }
-
-  // 2. Embed Parameter preference
+export const getHostSpecifiedTheme = (): ThemeConfig => {
   if (isLightTheme()) {
     return getMergedLightTheme()
   }
@@ -433,8 +425,20 @@ export const getDefaultTheme = (): ThemeConfig => {
     return getMergedDarkTheme()
   }
 
-  // 3. OS preference
   return createAutoTheme()
+}
+
+export const getDefaultTheme = (): ThemeConfig => {
+  // Priority for default theme
+  const cachedTheme = getCachedTheme()
+
+  // We shouldn't ever have auto saved in our storage in case
+  // OS theme changes but we explicitly check in case!
+  if (cachedTheme && cachedTheme.name !== AUTO_THEME_NAME) {
+    return cachedTheme
+  }
+
+  return getHostSpecifiedTheme()
 }
 
 const whiteSpace = /\s+/
