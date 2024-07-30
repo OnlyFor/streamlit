@@ -27,14 +27,14 @@ class NewFragmentIdQueueTest(unittest.TestCase):
 
     def test_raises_exception_if_no_fragment_id_queue(self):
         ctx = MagicMock()
-        ctx.script_requests.fragment_id_queue = []
+        ctx.fragment_ids_this_run = []
 
         with pytest.raises(StreamlitAPIException):
             _new_fragment_id_queue(ctx, scope="fragment")
 
     def test_asserts_if_curr_id_not_in_queue(self):
         ctx = MagicMock()
-        ctx.script_requests.fragment_id_queue = ["some_fragment_id"]
+        ctx.fragment_ids_this_run = ["some_fragment_id"]
         ctx.current_fragment_id = "some_other_fragment_id"
 
         with pytest.raises(AssertionError):
@@ -42,7 +42,7 @@ class NewFragmentIdQueueTest(unittest.TestCase):
 
     def test_drops_items_in_queue_until_curr_id(self):
         ctx = MagicMock()
-        ctx.script_requests.fragment_id_queue = [
+        ctx.fragment_ids_this_run = [
             "id1",
             "id2",
             "id3",
